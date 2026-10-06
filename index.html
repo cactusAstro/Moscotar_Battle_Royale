@@ -111,6 +111,14 @@ body{background:var(--board);color:var(--ink);font-family:var(--ui);font-weight:
 .rw small{display:block;color:var(--ink-dim);font-size:12px}
 .rw .xpbar{margin:4px 0 0}
 @media (max-width:760px){ .prog{grid-template-columns:minmax(0,1fr)} }
+#voiceBox{display:flex;flex-direction:column;gap:6px;background:rgba(var(--dark),.25);border-radius:4px;padding:8px}
+#voiceBox input[type=range]{width:100%;accent-color:var(--gold)}
+#voiceHud{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;gap:4px;font:800 13px/1.2 var(--ui);max-width:40vw}
+#voiceHud div{background:rgba(var(--dark),.5);padding:4px 9px;border-radius:3px;width:fit-content}
+#voiceHud .me.on{color:#63e35c}
+#voiceHud .me.off{color:var(--ink-dim)}
+#voiceHud .talk{color:#ffd84a}
+body.touch #voiceHud{bottom:140px}
 #play:disabled{filter:grayscale(.7);opacity:.75;cursor:wait}
 @media (max-width:760px){
   #side{grid-column:1;grid-row:2;justify-self:stretch;width:auto}
@@ -228,6 +236,7 @@ body.touch #bars{left:50%;transform:translateX(-50%);width:min(320px,44vw)}
     <div class="tb" id="tRamp" data-btn="ramp">Rampa</div>
     <div class="tb" id="tGren" data-btn="gren">Gran.</div>
   </div>
+  <div id="voiceHud" hidden></div>
   <div id="inv"><div id="items"><span id="mats">Madera<b id="matsN">0</b></span><span class="it">Granadas<b id="grenN">0</b></span><span class="it">Botiquín<b id="medN">0</b></span></div><div id="slots"></div></div>
 </div>
 
@@ -250,12 +259,17 @@ body.touch #bars{left:50%;transform:translateX(-50%);width:min(320px,44vw)}
         <div class="code">Sala<b id="roomCode"></b></div>
         <ul id="roomList"></ul>
         <label class="chk"><input type="checkbox" id="netBots" checked> Rellenar con bots</label>
+        <div id="voiceBox">
+          <label class="chk"><input type="checkbox" id="voiceOn"> 🎤 Chat de voz por proximidad</label>
+          <label class="chk"><input type="checkbox" id="voicePtt"> Pulsar <b>V</b> para hablar</label>
+          <label class="fld">Volumen de voces<input type="range" id="voiceVol" min="0" max="2" step="0.05" value="1"></label>
+        </div>
         <button class="btn small ghost" id="netLeave" type="button">Salir de la sala</button>
       </div>
       <p id="netStatus"></p>
     </section>
   </div>
-  <p id="help"><b>WASD</b> moverse · <b>Ratón</b> apuntar · <b>Clic</b> disparar · <b>Clic derecho</b> zoom · <b>Espacio</b> saltar · <b>Shift</b> correr · <b>R</b> recargar · <b>1-4</b> o rueda cambiar arma · <b>Q</b> muro · <b>Z</b> rampa · <b>X</b> suelo (mirando arriba: techo) · <b>G</b> granada · <b>H</b> botiquín · <b>Espacio</b> contra una pared: escalar · <b>E</b> cofre · <b>B</b> bailar · <b>N</b> cambiar baile · <b>Online:</b> crea una sala y pasa el código</p>
+  <p id="help"><b>WASD</b> moverse · <b>Ratón</b> apuntar · <b>Clic</b> disparar · <b>Clic derecho</b> zoom · <b>Espacio</b> saltar · <b>Shift</b> correr · <b>R</b> recargar · <b>1-4</b> o rueda cambiar arma · <b>Q</b> muro · <b>Z</b> rampa · <b>X</b> suelo (mirando arriba: techo) · <b>G</b> granada · <b>H</b> botiquín · <b>Espacio</b> contra una pared: escalar · <b>E</b> cofre · <b>B</b> bailar · <b>N</b> cambiar baile · <b>V</b> hablar (si activas pulsar para hablar) · <b>Online:</b> crea una sala y pasa el código</p>
   <div id="playWrap"><div id="modeRow"><button type="button" id="arenaBadge" aria-label="Ver pase de batalla y medallas"></button><div id="mode"><button type="button" data-mode="normal">Normal</button><button type="button" data-mode="arena">Arena 🍦</button></div><button class="btn small ghost" id="passBtn" type="button">Pase de batalla</button></div><div id="skinName"></div><button id="play" type="button">Jugar</button></div>
 </div>
 
@@ -1290,9 +1304,67 @@ function onNet(from,d){
   else if(t==='barrel'){ const b=barrels[d.i]; if(b) hitBarrel(b,999,null,true); }
   else if(t==='drop'&&!NET.host){ spawnDrop(d.x,d.z); }
 }
+// ---------------------------------------------------------------- chat de voz por proximidad (WebRTC, de jugador a jugador)
+// Quien tiene el micro activado llama a cada jugador de la sala con su audio (llamada de un solo sentido).
+// El volumen baja con la distancia y el panorama estéreo sigue a dónde está el otro respecto a tu cámara.
+const VOICE_NEAR=8, VOICE_FAR=45;
+const VOICE={on:false,stream:null,ptt:false,talkKey:false,vol:1,out:new Map(),in:new Map(),ctx:null,myAn:null,myBuf:null,myLevel:0,hudStr:''};
+try{ const v=JSON.parse(localStorage.getItem('moscotarVoice')||'{}'); VOICE.ptt=!!v.ptt; if(typeof v.vol==='number') VOICE.vol=v.vol; }catch(err){}
+function voiceSave(){ try{ localStorage.setItem('moscotarVoice',JSON.stringify({ptt:VOICE.ptt,vol:VOICE.vol})); }catch(err){} }
+function voiceCtx(){ if(!VOICE.ctx){ const AC=window.AudioContext||window.webkitAudioContext; VOICE.ctx=new AC(); } if(VOICE.ctx.state==='suspended') VOICE.ctx.resume(); return VOICE.ctx; }
+function voiceEnable(on){
+  if(on){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ netStatus('Este navegador no deja usar el micrófono aquí.'); $('voiceOn').checked=false; return; }
+    voiceCtx();
+    navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(st=>{
+      if(!$('voiceOn').checked){ st.getTracks().forEach(t=>t.stop()); return; }
+      VOICE.stream=st; VOICE.on=true; const an=VOICE.ctx.createAnalyser(); an.fftSize=256; VOICE.ctx.createMediaStreamSource(st).connect(an); VOICE.myAn=an; VOICE.myBuf=new Uint8Array(an.fftSize);
+      applyMicMute(); voiceSync(); netStatus(VOICE.ptt?'Micrófono listo: mantén V para hablar.':'Micrófono abierto: tus amigos te oyen si estás cerca.'); renderVoiceHud(true); })
+    .catch(()=>{ $('voiceOn').checked=false; netStatus('No se pudo usar el micrófono: revisa el permiso del navegador.'); }); }
+  else { VOICE.on=false; for(const c of VOICE.out.values()) try{ c.close(); }catch(err){} VOICE.out.clear();
+    if(VOICE.stream) VOICE.stream.getTracks().forEach(t=>t.stop()); VOICE.stream=null; VOICE.myAn=null; renderVoiceHud(true); } }
+function applyMicMute(){ if(VOICE.stream) VOICE.stream.getAudioTracks().forEach(t=>{ t.enabled=!VOICE.ptt||VOICE.talkKey; }); }
+function voiceSync(){ if(!VOICE.on||!VOICE.stream||!NET.on||!NET.peer) return;
+  for(const p of NET.players){ if(p.id===NET.myId||VOICE.out.has(p.id)) continue; let call=null; try{ call=NET.peer.call(p.id,VOICE.stream,{metadata:{voz:1}}); }catch(err){} if(!call) continue;
+    VOICE.out.set(p.id,call); const drop=()=>{ if(VOICE.out.get(p.id)===call) VOICE.out.delete(p.id); }; call.on('close',drop); call.on('error',drop); }
+  for(const [id,c] of VOICE.out) if(!NET.players.some(p=>p.id===id)){ try{ c.close(); }catch(err){} VOICE.out.delete(id); } }
+function onVoiceCall(call){ if(!NET.players.some(p=>p.id===call.peer)&&!(NET.host&&NET.conns.has(call.peer))){ try{ call.close(); }catch(err){} return; }
+  call.answer(); call.on('stream',st=>voiceAttach(call.peer,st,call)); call.on('close',()=>voiceDetach(call.peer,call)); call.on('error',()=>voiceDetach(call.peer,call)); }
+function voiceAttach(id,st,call){ voiceDetach(id); const ctx=voiceCtx();
+  // Chrome solo deja pasar el audio WebRTC a WebAudio si el stream está enganchado a un <audio> (silenciado)
+  const el=new Audio(); el.srcObject=st; el.muted=true; const pr=el.play&&el.play(); if(pr&&pr.catch) pr.catch(()=>{});
+  const src=ctx.createMediaStreamSource(st), an=ctx.createAnalyser(), g=ctx.createGain(), pan=ctx.createStereoPanner?ctx.createStereoPanner():null; an.fftSize=256; g.gain.value=VOICE.vol;
+  src.connect(an); src.connect(g); if(pan){ g.connect(pan); pan.connect(ctx.destination); } else g.connect(ctx.destination);
+  VOICE.in.set(id,{st,el,src,an,g,pan,call,buf:new Uint8Array(an.fftSize),level:0}); renderRoom(); }
+function voiceDetach(id,call){ const v=VOICE.in.get(id); if(!v||(call&&v.call!==call)) return; try{ v.src.disconnect(); v.g.disconnect(); if(v.pan) v.pan.disconnect(); }catch(err){} v.el.srcObject=null; VOICE.in.delete(id); renderRoom(); }
+function voiceDropAll(){ for(const id of [...VOICE.in.keys()]) voiceDetach(id); for(const c of VOICE.out.values()) try{ c.close(); }catch(err){} VOICE.out.clear(); }
+function micLevel(an,buf){ an.getByteTimeDomainData(buf); let s=0; for(let i=0;i<buf.length;i++){ const x=(buf[i]-128)/128; s+=x*x; } return Math.sqrt(s/buf.length); }
+function voiceTick(){
+  if(!VOICE.in.size&&!VOICE.on){ if(!$('voiceHud').hidden) $('voiceHud').hidden=true; return; }
+  const inGame=(state==='play'||state==='end')&&P, talkers=[], ctx=VOICE.ctx, rx=-Math.cos(yaw), rz=Math.sin(yaw);
+  for(const [id,v] of VOICE.in){ let vol=1, pan=0; const e=NET.ents.get(id);
+    if(inGame&&e){ if(P.alive&&!e.alive) vol=0;
+      else if(P.alive&&e.alive){ const dx=e.pos.x-P.pos.x, dz=e.pos.z-P.pos.z, d=Math.hypot(dx,dz)||.01; vol=d<=VOICE_NEAR?1:d>=VOICE_FAR?0:1-(d-VOICE_NEAR)/(VOICE_FAR-VOICE_NEAR); vol*=vol; pan=clamp((dx*rx+dz*rz)/d,-1,1)*.85; } }
+    v.g.gain.setTargetAtTime(vol*VOICE.vol,ctx.currentTime,.06); if(v.pan) v.pan.pan.setTargetAtTime(pan,ctx.currentTime,.06);
+    v.level=v.level*.6+micLevel(v.an,v.buf)*.4; const talking=v.level>.015&&vol>.03;
+    if(e){ e.talking=talking; if(e.spk) e.spk.visible=talking; }
+    if(talking){ const pl=NET.players.find(p=>p.id===id); talkers.push(pl?pl.name:'Amigo'); } }
+  let me=''; if(VOICE.on&&VOICE.myAn){ VOICE.myLevel=VOICE.myLevel*.6+micLevel(VOICE.myAn,VOICE.myBuf)*.4; const live=!VOICE.ptt||VOICE.talkKey;
+    me='<div class="me '+(live?'on':'off')+'">🎤 '+(live?(VOICE.myLevel>.015?'Hablando…':'Micro abierto'):'Silenciado · mantén V')+'</div>'; }
+  const str=me+talkers.map(n=>'<div class="talk">🔊 '+esc(n)+'</div>').join('');
+  if(str!==VOICE.hudStr){ VOICE.hudStr=str; $('voiceHud').innerHTML=str; }
+  const show=state!=='lobby'&&!!str; if($('voiceHud').hidden===show) $('voiceHud').hidden=!show; }
+function renderVoiceHud(force){ if(force) VOICE.hudStr=''; $('voiceOn').checked=VOICE.on; $('voicePtt').checked=VOICE.ptt; $('voiceVol').value=VOICE.vol; }
+$('voiceOn').addEventListener('change',()=>voiceEnable($('voiceOn').checked));
+$('voicePtt').addEventListener('change',()=>{ VOICE.ptt=$('voicePtt').checked; voiceSave(); applyMicMute(); });
+$('voiceVol').addEventListener('input',()=>{ VOICE.vol=+$('voiceVol').value; voiceSave(); });
+window.addEventListener('keydown',e=>{ if(e.code!=='KeyV'||e.repeat||(e.target&&e.target.tagName==='INPUT')) return; VOICE.talkKey=true; applyMicMute(); });
+window.addEventListener('keyup',e=>{ if(e.code!=='KeyV') return; VOICE.talkKey=false; applyMicMute(); });
+window.addEventListener('blur',()=>{ VOICE.talkKey=false; applyMicMute(); });
+renderVoiceHud();
 function hostRoom(){ netStatus('Creando sala…');
   loadPeer().then(()=>{ const tryOpen=n=>{ const code=genCode(), peer=new Peer('moscotar-'+code.toLowerCase(),peerOpts());
     peer.on('open',id=>{ Object.assign(NET,{peer,on:true,host:true,myId:id,hostId:id,code,players:[{id,name:myName(),skin:SKINS[selSkin].id}]}); renderRoom(); netStatus('Sala creada. Pasa el código a tus amigos.'); });
+    peer.on('call',onVoiceCall);
     peer.on('connection',c=>{ c.on('open',()=>{ if(state!=='lobby'||NET.players.length>=16){ c.send({t:'busy'}); setTimeout(()=>c.close(),400); return; } NET.conns.set(c.peer,c); });
       c.on('data',d=>{ if(NET.conns.has(c.peer)) onNet(c.peer,d); }); c.on('close',()=>dropPeer(c.peer)); c.on('error',()=>dropPeer(c.peer)); });
     peer.on('error',e=>{ if(e.type==='unavailable-id'&&n<4){ peer.destroy(); tryOpen(n+1); } else if(!NET.on){ netStatus('No se pudo crear la sala ('+e.type+'). Revisa tu conexión.'); peer.destroy(); } });
@@ -1300,7 +1372,7 @@ function hostRoom(){ netStatus('Creando sala…');
     tryOpen(0); }).catch(()=>netStatus('No se pudo cargar el modo online. Hace falta internet.')); }
 function joinRoom(){ const code=($('pcode').value||'').trim().toUpperCase(); if(code.length<4){ netStatus('Escribe el código de la sala.'); return; }
   netStatus('Conectando a '+code+'…');
-  loadPeer().then(()=>{ const peer=new Peer(peerOpts()); NET.peer=peer;
+  loadPeer().then(()=>{ const peer=new Peer(peerOpts()); NET.peer=peer; peer.on('call',onVoiceCall);
     peer.on('open',id=>{ NET.myId=id; const c=peer.connect('moscotar-'+code.toLowerCase(),{reliable:true});
       const to=setTimeout(()=>{ if(!NET.on&&NET.peer===peer){ leaveRoom(true); netStatus('La sala '+code+' no responde.'); } },15000);
       c.on('open',()=>{ clearTimeout(to); Object.assign(NET,{on:true,host:false,code,hostConn:c}); c.send({t:'hello',name:myName(),skin:SKINS[selSkin].id,glider:PROG.glider}); renderRoom(); netStatus('Conectado. Esperando a que el anfitrión empiece.'); });
@@ -1308,7 +1380,7 @@ function joinRoom(){ const code=($('pcode').value||'').trim().toUpperCase(); if(
       c.on('close',()=>{ if(!NET.on||NET.peer!==peer) return; const playing=state!=='lobby'; leaveRoom(true); if(playing) toLobby(); netStatus('Se cerró la conexión con la sala.'); }); });
     peer.on('error',e=>{ if(NET.peer!==peer) return; const was=NET.on; leaveRoom(true); netStatus(e.type==='peer-unavailable'?'No hay ninguna sala con el código '+code+'.':'Error de conexión ('+e.type+').'); if(was&&state!=='lobby') toLobby(); }); })
   .catch(()=>netStatus('No se pudo cargar el modo online. Hace falta internet.')); }
-function leaveRoom(keepMsg){ setTimeout(renderProg,0); const p=NET.peer; Object.assign(NET,{on:false,host:false,peer:null,hostConn:null,hostId:null,code:'',players:[],myId:'yo'}); NET.conns.clear(); if(p) try{ p.destroy(); }catch(err){} if(!keepMsg) netStatus(''); renderRoom(); }
+function leaveRoom(keepMsg){ setTimeout(renderProg,0); voiceDropAll(); if(VOICE.on){ $('voiceOn').checked=false; voiceEnable(false); } const p=NET.peer; Object.assign(NET,{on:false,host:false,peer:null,hostConn:null,hostId:null,code:'',players:[],myId:'yo'}); NET.conns.clear(); if(p) try{ p.destroy(); }catch(err){} if(!keepMsg) netStatus(''); renderRoom(); }
 function dropPeer(id){ if(!NET.host||!NET.conns.has(id)) return; NET.conns.delete(id); const i=NET.players.findIndex(p=>p.id===id); let name='';
   if(i>=0){ name=NET.players[i].name; NET.players.splice(i,1); }
   if(state==='play'||state==='end'){ const e=NET.ents.get(id); if(e&&e.alive) eliminate(e,null,'desconexión'); }
@@ -1316,7 +1388,7 @@ function dropPeer(id){ if(!NET.host||!NET.conns.has(id)) return; NET.conns.delet
 function broadcastRoom(){ if(!NET.host) return; if(NET.players[0]){ NET.players[0].name=myName(); NET.players[0].skin=SKINS[selSkin].id; NET.players[0].glider=PROG.glider; } netSend({t:'room',players:NET.players,map:mapId,bots:NET.bots,mode:curMode}); renderRoom(); }
 function netProfile(){ if(!NET.on) return; if(NET.host) broadcastRoom(); else if(NET.hostConn&&NET.hostConn.open) NET.hostConn.send({t:'hello',name:myName(),skin:SKINS[selSkin].id,glider:PROG.glider}); }
 function renderRoom(){ $('netIdle').hidden=NET.on; $('netRoom').hidden=!NET.on;
-  if(NET.on){ $('roomCode').textContent=NET.code; $('roomList').innerHTML=NET.players.map((p,i)=>'<li><span>'+esc(p.name)+'</span><span>'+(i===0?'<em>anfitrión</em> ':'')+(p.id===NET.myId?'<em>tú</em>':'')+'</span></li>').join(''); $('netBots').checked=NET.bots; $('netBots').disabled=!NET.host; }
+  if(NET.on){ voiceSync(); $('roomCode').textContent=NET.code; $('roomList').innerHTML=NET.players.map((p,i)=>'<li><span>'+(VOICE.in.has(p.id)?'🔊 ':'')+esc(p.name)+'</span><span>'+(i===0?'<em>anfitrión</em> ':'')+(p.id===NET.myId?'<em>tú</em>':'')+'</span></li>').join(''); $('netBots').checked=NET.bots; $('netBots').disabled=!NET.host; }
   const play=$('play'); if(NET.on&&!NET.host){ play.disabled=true; play.textContent='Esperando…'; } else { play.disabled=false; play.textContent=NET.on?'Empezar':'Jugar'; }
   document.querySelectorAll('.map').forEach(b=>{ b.disabled=NET.on&&!NET.host; b.setAttribute('aria-pressed',b.dataset.map===mapId?'true':'false'); }); }
 function hostStart(){ broadcastRoom(); const bots=[];
@@ -1324,7 +1396,8 @@ function hostStart(){ broadcastRoom(); const bots=[];
     bots.push({id:'b'+i,si,name:pick(S.nick)+(10+(Math.random()*89|0)),w:pick(['pistola','fusil','fusil','escopeta','subfusil']),x:r2(sp.x),z:r2(sp.z),sh:Math.random()<.3?50:0}); } }
   const m={t:'start',map:mapId,players:NET.players,bots,mode:curMode}; netSend(m); startMatch(m); }
 function addTag(e){ const t=canvasTex(256,64,(x,W,H)=>{ x.font='900 30px Nunito, Arial, sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.lineWidth=7; x.strokeStyle='rgba(0,0,0,.75)'; x.strokeText(e.name,W/2,H/2); x.fillStyle='#ffd84a'; x.fillText(e.name,W/2,H/2); });
-  const sp=new T.Sprite(new T.SpriteMaterial({map:t,transparent:true,depthWrite:false})); sp.scale.set(2.6,.65,1); sp.position.y=(e.S.headY||1.93)+.95; e.c.root.add(sp); }
+  const sp=new T.Sprite(new T.SpriteMaterial({map:t,transparent:true,depthWrite:false})); sp.scale.set(2.6,.65,1); sp.position.y=(e.S.headY||1.93)+.95; e.c.root.add(sp);
+  const spk=new T.Sprite(new T.SpriteMaterial({map:canvasTex(64,64,(x)=>{ x.font='44px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText('🔊',32,36); }),transparent:true,depthWrite:false})); spk.scale.set(.7,.7,1); spk.position.y=sp.position.y+.62; spk.visible=false; e.c.root.add(spk); e.spk=spk; }
 function updateRemote(e,dt){ const n=e.net; if(!n||!e.alive) return; e.c.root.visible=true; const k=Math.min(1,dt*14);
   if(Math.hypot(n.x-e.pos.x,n.z-e.pos.z)>12) e.pos.set(n.x,n.y,n.z); else { e.pos.x+=(n.x-e.pos.x)*k; e.pos.y+=(n.y-e.pos.y)*k; e.pos.z+=(n.z-e.pos.z)*k; }
   e.yaw=lerpAngle(e.yaw,n.yaw,k); e.pitch=n.pitch; e.moveAmt=n.mv; e.walk+=e.moveAmt*dt*11; e.onGround=!!n.og; e.gliding=!!n.gl; e.emote=n.em?1:0; e.dance=n.em&&DANCES[n.em-1]?DANCES[n.em-1].id:'giro'; e.climbing=!!n.cl;
@@ -1501,7 +1574,7 @@ if(isTouch){ document.body.classList.add('touch'); const tl=$('touch'), viz=$('s
 let last=performance.now();
 function frame(now){ requestAnimationFrame(frame); const dt=Math.min(.05,Math.max(0,(now-last)/1000)); last=now; tAcc+=dt; frameN++;
   if(state==='lobby') updateLobby(dt); else if(state==='play'){ if(!paused||NET.on) updateGame(dt); } else updateEnd(dt);
-  updateMapFx(dt);
+  updateMapFx(dt); if(frameN%3===0) voiceTick();
   sky.position.copy(camera.position); renderer.render(scene,camera); }
 requestAnimationFrame(frame);
 })();
