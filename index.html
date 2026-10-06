@@ -751,13 +751,13 @@ const SKINS=[
 {id:'ninja',name:'Moscotar ninja',sw:'#17181c',nick:['Sombra','Shuriken','Sigilo'],torso:0x1d1e24,arms:0x1d1e24,legs:0x1d1e24,shoes:0x111114,hands:0x1d1e24,fat:1.05,face:{img:'a',hair:'#111114',hood:'#1d1e24'},
   extra(c,f){ const red=M(0xd62f2f); part(G.cyl,red,.36,.07,.36,0,.17,0,c.head); for(const s of[-1,1]){ const t=part(G.box,red,.05,.32,.05,s*.08,.08,-.36,c.head); t.rotation.set(-.6,0,s*.35); }
     part(G.cyl,red,.52*f,.08,.44*f,0,.98,0,c.rig); const k=part(G.box,M(0x2b2b30),.06,1.25,.05,0,1.35,-.44*f,c.rig); k.rotation.z=.7; part(G.box,M(0xc9ccd2),.04,.9,.02,.08,1.47,-.47*f,c.rig).rotation.z=.7; }},
-{id:'pirata',name:'Capitán Moscotar',sw:'#b0302a',nick:['Garfio','Corsario','Bucanero'],torso:0xb0302a,arms:0xb0302a,legs:0x2a2d3a,shoes:0x1a1410,hands:SK,fat:1.15,face:{img:'c',hair:'#1c1714'},
+{id:'pirata',name:'Capitan cazaniñas',sw:'#b0302a',nick:['Garfio','Corsario','Bucanero'],torso:0xb0302a,arms:0xb0302a,legs:0x2a2d3a,shoes:0x1a1410,hands:SK,fat:1.15,face:{img:'c',hair:'#1c1714'},
   extra(c,f){ const blk=M(0x1b1b1d), gold=M(0xf2c230);
     part(G.cyl,blk,.48,.07,.48,0,.3,0,c.head); const h=part(G.cone,blk,.4,.42,.4,0,.52,0,c.head); h.scale.z=.55; part(G.sphere,M(0xffffff),.06,.06,.02,0,.52,.22,c.head);
     part(G.sphere,blk,.09,.08,.03,-.13,.04,.33,c.head); part(G.cyl,blk,.38,.025,.38,0,.07,0,c.head).rotation.z=.25;
     for(const y of[1.05,1.25,1.45]) part(G.sphere,gold,.045,.045,.03,.12,y,.43*f,c.rig); part(G.cyl,M(0x5a3414),.52*f,.09,.44*f,0,.98,0,c.rig);
     const par=new T.Group(); par.position.set(.52*f,1.82,0); c.rig.add(par); part(G.sphere,M(0x2fbf4a),.14,.2,.14,0,0,0,par); part(G.sphere,M(0xe5261f),.1,.1,.1,0,.2,.04,par); part(G.cone,M(0xf2c230),.04,.1,.04,0,.18,.15,par).rotation.x=Math.PI/2; }},
-{id:'bombero',name:'Moscotar bombero',sw:'#d9a334',nick:['Manguera','Sirena','Rescate'],torso:0xd9a334,arms:0xd9a334,legs:0xd9a334,shoes:0x1b1b1d,hands:0x1b1b1d,fat:1.15,face:{img:'d',hair:'#15110f'},
+{id:'bombero',name:'calientachochos',sw:'#d9a334',nick:['Manguera','Sirena','Rescate'],torso:0xd9a334,arms:0xd9a334,legs:0xd9a334,shoes:0x1b1b1d,hands:0x1b1b1d,fat:1.15,face:{img:'d',hair:'#15110f'},
   extra(c,f){ const red=M(0xd62f2f), ref=B(0xd8ff4a);
     part(G.hemi,red,.4,.42,.4,0,.02,0,c.head); part(G.cyl,red,.46,.04,.52,0,.13,-.04,c.head); part(G.box,M(0xf2c230),.12,.12,.03,0,.28,.38,c.head);
     part(G.cyl,ref,.51*f,.05,.43*f,0,1.02,0,c.rig); part(G.cyl,ref,.53*f,.05,.45*f,0,1.3,0,c.rig);
@@ -768,13 +768,13 @@ const SKINS=[
     part(G.cyl,gold,.3,.18,.3,0,.42,0,c.head); for(let i=0;i<6;i++){ const a=i/6*TAU; part(G.cone,gold,.06,.16,.06,Math.cos(a)*.27,.58,Math.sin(a)*.27,c.head); part(G.sphere,M(i%2?0xe5261f:0x2f7fe6),.035,.035,.035,Math.cos(a)*.3,.44,Math.sin(a)*.3,c.head); }
     part(G.cyl,fur,.56*f,.16,.48*f,0,1.66,0,c.rig); for(let i=0;i<8;i++){ const a=i/8*TAU; part(G.sphere,dots,.025,.04,.02,Math.sin(a)*.56*f,1.66,Math.cos(a)*.48*f,c.rig); }
     const cape=part(G.box,M(0xb01c2e),.9*f,1.25,.05,0,1.05,-.45*f,c.rig); cape.rotation.x=.12; part(G.cyl,gold,.03,.9,.03,.68*f,1.0,.15,c.rig); part(G.sphere,gold,.09,.09,.09,.68*f,1.5,.15,c.rig); }},
-{id:'zombi',name:'Moscombi',sw:'#7fae5a',nick:['Cerebros','Zombi','Podrido'],torso:0x5c7a8c,arms:0x8fbf6a,legs:0x4a3a2a,shoes:0x3a2a1a,hands:0x8fbf6a,fat:1.1,face:{img:'c',hair:'#2c2a22'},
+{id:'zombi',name:'Salvatillo enfermo',sw:'#7fae5a',nick:['Cerebros','Zombi','Podrido'],torso:0x5c7a8c,arms:0x8fbf6a,legs:0x4a3a2a,shoes:0x3a2a1a,hands:0x8fbf6a,fat:1.1,face:{img:'c',hair:'#2c2a22'},
   extra(c,f){ const rip=M(0x3d5260), blood=M(0x7a1d1d), skin=M(0x8fbf6a);
     for(let i=0;i<5;i++) part(G.box,rip,.09,.12,.03,(i-2)*.15,.72,.37*f,c.rig).rotation.z=i*.6;
     part(G.sphere,blood,.08,.05,.02,.15,1.3,.42*f,c.rig); part(G.sphere,blood,.06,.04,.02,-.2,1.1,.43*f,c.rig);
     part(G.sphere,skin,.12,.09,.03,-.12,1.45,.41*f,c.rig); for(const s of[-1,1]) part(G.sphere,M(0xf2f2c8),.04,.04,.02,s*.1,-.05,.33,c.head);
     c.armL.rotation.x=-1.2; c.armR.rotation.x=-1.2; }},
-{id:'futbol',name:'Moscotar crack',sw:'#e8e8e8',nick:['Golazo','Crack','Delantero'],torsoTex:'futbol',arms:0xe8e8e8,legs:0x1b1b1d,shoes:0x2fd04a,hands:SK,fat:1.05,face:{img:'d',hair:'#15110f'},
+{id:'futbol',name:'Capitan perú',sw:'#e8e8e8',nick:['Golazo','Crack','Delantero'],torsoTex:'futbol',arms:0xe8e8e8,legs:0x1b1b1d,shoes:0x2fd04a,hands:SK,fat:1.05,face:{img:'d',hair:'#15110f'},
   extra(c,f){ for(const L of[c.legL,c.legR]){ part(G.cyl,M(0xe5261f),.19,.32,.19,0,-.52,0,L); part(G.cyl,M(0xffffff),.2,.05,.2,0,-.38,0,L); }
     part(G.cyl,M(0x1b1b1d),.52*f,.18,.44*f,0,.95,0,c.rig);
     const ball=new T.Mesh(G.sphere,M(0xffffff)); ball.scale.setScalar(.22); ball.position.set(.35,.24,.45); c.root.add(ball); part(G.sphere,M(0x1b1b1d),.07,.07,.07,0,.95,.35,ball); }},
@@ -785,19 +785,19 @@ const SKINS=[
     for(let i=0;i<3;i++) part(G.cone,d,.07,.16,.05,0,.42-i*.02,-.3+i*.12,c.head).rotation.x=-.4+i*.3;
     const tail=part(G.cone,g,.28,1.1,.28,0,.7,-.85*f,c.rig); tail.rotation.x=-1.9;
     for(const s of[-1,1]) for(let i=0;i<3;i++) part(G.cone,M(0xffffff),.025,.06,.025,s*(.08+i*.06),-.24,.31,c.head).rotation.x=Math.PI; }},
-{id:'robot',name:'Mosco-bot',sw:'#9aa3ad',nick:['Bip','Circuito','Tuerca'],torso:0x9aa3ad,arms:0x7a828c,legs:0x7a828c,shoes:0x3a3d44,hands:0x3a3d44,fat:1.15,face:{img:'c',hair:'#1c1714',hood:'#9aa3ad'},
+{id:'robot',name:'Terreneitor de pie',sw:'#9aa3ad',nick:['Bip','Circuito','Tuerca'],torso:0x9aa3ad,arms:0x7a828c,legs:0x7a828c,shoes:0x3a3d44,hands:0x3a3d44,fat:1.15,face:{img:'c',hair:'#1c1714',hood:'#9aa3ad'},
   extra(c,f){ const dark=M(0x3a3d44);
     part(G.cyl,dark,.02,.32,.02,0,.48,0,c.head); const bulb=part(G.sphere,B(0xff3b3b),.07,.07,.07,0,.66,0,c.head); c.spinners=[{g:bulb,v:6}];
     for(const s of[-1,1]) part(G.cyl,dark,.1,.08,.1,s*.36,0,0,c.head).rotation.z=Math.PI/2;
     part(G.box,dark,.42,.32,.04,0,1.3,.41*f,c.rig); [0x2ef2ff,0x7cff4a,0xffe14a].forEach((col,i)=>part(G.sphere,B(col),.04,.04,.02,-.12+i*.12,1.36,.44*f,c.rig));
     for(const A of[c.armL,c.armR]) for(const y of[-.2,-.42]) part(G.cyl,dark,.14,.04,.14,0,y,0,A);
     part(G.box,dark,.5*f,.5,.2,0,1.3,-.48*f,c.rig); }},
-{id:'payaso',name:'Moscayaso',sw:'#ff5fa2',nick:['Bocina','Risas','Globito'],torsoTex:'payaso',arms:0xffd84a,legs:0x2f7fe6,shoes:0xe5261f,hands:0xffffff,fat:1.25,shoe:[.3,.15,.45],face:{img:'d',hair:'#15110f'},
+{id:'payaso',name:'Salvatillo ligando',sw:'#ff5fa2',nick:['Bocina','Risas','Globito'],torsoTex:'payaso',arms:0xffd84a,legs:0x2f7fe6,shoes:0xe5261f,hands:0xffffff,fat:1.25,shoe:[.3,.15,.45],face:{img:'d',hair:'#15110f'},
   extra(c,f){ part(G.sphere,M(0xe5261f),.08,.08,.08,0,0,.36,c.head);
     const wig=[0xff3b3b,0xffd84a,0x2fbf4a,0x2f7fe6,0xb05fff]; for(let i=0;i<10;i++){ const a=i/10*TAU; part(G.sphere,M(wig[i%5]),.13,.13,.13,Math.cos(a)*.3,.24+Math.sin(i*2.3)*.06,Math.sin(a)*.3-.05,c.head); }
     part(G.cone,M(0xb05fff),.14,.4,.14,0,.55,0,c.head); part(G.sphere,M(0xffd84a),.05,.05,.05,0,.76,0,c.head);
     for(const s of[-1,1]) part(G.cone,M(0xffffff),.12,.12,.06,s*.18,1.68,.32*f,c.rig).rotation.z=s*Math.PI/2; }},
-{id:'vaquero',name:'Sheriff Moscotar',sw:'#a8743a',nick:['Sheriff','Rodeo','Forastero'],torso:0xe9d8b4,arms:0xe9d8b4,legs:0x2a3f6b,shoes:0x6b4526,hands:SK,fat:1.1,face:{img:'c',hair:'#1c1714'},
+{id:'vaquero',name:'Sheriff de "LA MENOR" ',sw:'#a8743a',nick:['Sheriff','Rodeo','Forastero'],torso:0xe9d8b4,arms:0xe9d8b4,legs:0x2a3f6b,shoes:0x6b4526,hands:SK,fat:1.1,face:{img:'c',hair:'#1c1714'},
   extra(c,f){ const hat=M(0x8a5a2b), vest=M(0x6b4526), star=M(0xf2c230,{emissive:0x4a3400});
     part(G.cyl,hat,.55,.04,.55,0,.25,0,c.head); part(G.cyl,hat,.3,.26,.3,0,.4,0,c.head); part(G.cyl,M(0x3a2414),.31,.05,.31,0,.31,0,c.head);
     for(const s of[-1,1]) part(G.box,vest,.2,.6,.04,s*.24,1.25,.42*f-.02,c.rig);
@@ -807,24 +807,24 @@ const SKINS=[
   extra(c,f){ part(G.hemi,M(0xff9ec4),.44,.5,.44,0,.06,0,c.head); part(G.hemi,M(0xfff1c8),.36,.4,.36,0,.3,0,c.head); part(G.sphere,M(0xd62f2f),.1,.1,.1,0,.48,0,c.head);
     const sp=[0xff3b3b,0x2f7fe6,0xffe14a,0x3fbf5a,0xffffff]; for(let i=0;i<14;i++){ const a=i*2.4, y=.12+(i%4)*.06; part(G.box,M(sp[i%5]),.03,.03,.09,Math.cos(a)*.42,y,Math.sin(a)*.42,c.head).rotation.y=a; }
     part(G.sphere,M(0xfff1c8),.55*f,.2,.47*f,0,1.62,0,c.rig); }},
-{id:'neon',name:'Moscotar Neón',pass:7,sw:'#2ef2ff',nick:['Neón','Voltio','LED'],torso:0x15161f,arms:0x15161f,legs:0x15161f,shoes:0x15161f,hands:0x2ef2ff,fat:1.1,face:{img:'c',hair:'#1c1714'},
+{id:'neon',name:'Xx_Salvapro99_xX',pass:7,sw:'#2ef2ff',nick:['Neón','Voltio','LED'],torso:0x15161f,arms:0x15161f,legs:0x15161f,shoes:0x15161f,hands:0x2ef2ff,fat:1.1,face:{img:'c',hair:'#1c1714'},
   extra(c,f){ const n=B(0x2ef2ff), p=B(0xff3fd0);
     for(const y of[.95,1.25,1.5]) part(G.cyl,y===1.25?p:n,.51*f,.04,.43*f,0,y,0,c.rig); part(G.box,n,.03,.6,.02,0,1.25,.43*f,c.rig);
     for(const A of[c.armL,c.armR]) part(G.cyl,n,.135,.03,.135,0,-.3,0,A); for(const L of[c.legL,c.legR]){ part(G.cyl,p,.18,.03,.18,0,-.35,0,L); part(G.cyl,n,.18,.03,.18,0,-.6,0,L); }
     part(G.cyl,n,.37,.03,.37,0,.12,0,c.head); }},
-{id:'galactico',name:'Moscotar Galáctico',pass:10,sw:'#6a2fb8',nick:['Cosmos','Nebulosa','Órbita'],torsoTex:'galaxia',arms:0x2a1a6a,legs:0x2a1a6a,shoes:0x15161f,hands:0xbfa8ff,fat:1.15,face:{img:'d',hair:'#15110f'},
+{id:'galactico',name:'Salvapollas estrellado',pass:10,sw:'#6a2fb8',nick:['Cosmos','Nebulosa','Órbita'],torsoTex:'galaxia',arms:0x2a1a6a,legs:0x2a1a6a,shoes:0x15161f,hands:0xbfa8ff,fat:1.15,face:{img:'d',hair:'#15110f'},
   extra(c,f){ const ring=new T.Group(); ring.position.y=1.3; c.rig.add(ring); const tor=new T.Mesh(new T.TorusGeometry(.95*f,.035,6,40),B(0xc77dff)); tor.rotation.x=Math.PI/2.4; ring.add(tor);
     for(let i=0;i<3;i++){ const a=i/3*TAU; part(G.sphere,B([0xffe14a,0x2ef2ff,0xff3fd0][i]),.08,.08,.08,Math.cos(a)*.95*f,Math.sin(a)*.35,Math.sin(a)*.82*f,ring); }
     c.spinners=[{g:ring,v:1.4}]; part(G.cone,B(0xffe14a),.06,.12,.06,0,.5,0,c.head); }},
 {id:'sandia',name:'Moscotar Sandía',pass:14,sw:'#e8384f',nick:['Sandía','Pepitas','Melón'],torso:0xe8384f,arms:0x2f9a3a,legs:0x2f9a3a,shoes:0x1f6b2a,hands:0x2f9a3a,fat:1.3,face:{img:'a',hair:'#241a15',hood:'#2f9a3a'},
   extra(c,f){ for(let i=0;i<12;i++){ const a=i*1.3, y=1.0+(i%4)*.15; part(G.sphere,M(0x1b1b1d),.035,.055,.02,Math.sin(a)*.5*f*.98,y,Math.cos(a)*.42*f*.98,c.rig).rotation.y=a; }
     part(G.cyl,M(0x2f9a3a),.53*f,.12,.45*f,0,.78,0,c.rig); part(G.cyl,M(0xf6f2ea),.52*f,.05,.44*f,0,.86,0,c.rig); }},
-{id:'unicornio',name:'Moscotar Unicornio',pass:19,sw:'#f4f0ff',nick:['Unicornio','Purpurina','Arcoíris'],torso:0xf4f0ff,arms:0xf4f0ff,legs:0xf4f0ff,shoes:0xc77dff,hands:0xf4f0ff,fat:1.15,face:{img:'c',hair:'#1c1714',hood:'#f4f0ff'},
+{id:'unicornio',name:'Salvatillo maricón',pass:19,sw:'#f4f0ff',nick:['Unicornio','Purpurina','Arcoíris'],torso:0xf4f0ff,arms:0xf4f0ff,legs:0xf4f0ff,shoes:0xc77dff,hands:0xf4f0ff,fat:1.15,face:{img:'c',hair:'#1c1714',hood:'#f4f0ff'},
   extra(c,f){ part(G.cone,M(0xf2c230,{emissive:0x4a3400}),.08,.42,.08,0,.5,.12,c.head).rotation.x=.35;
     const rb=[0xff3b3b,0xff9a2e,0xffe14a,0x3fbf5a,0x2f7fe6,0x9b5fff]; for(let i=0;i<6;i++) part(G.sphere,M(rb[i]),.1,.13,.1,0,.3-i*.11,-.3-i*.02,c.head);
     for(const s of[-1,1]) part(G.cone,M(0xf4f0ff),.07,.18,.05,s*.2,.38,-.05,c.head);
     const tail=new T.Group(); tail.position.set(0,1.0,-.45*f); c.rig.add(tail); for(let i=0;i<6;i++) part(G.sphere,M(rb[i]),.09,.09,.09,0,-i*.09,-i*.06,tail); }},
-{id:'dorado',name:'Moscotar Dorado',pass:20,sw:'#f2c230',nick:['Oro','Lingote','Leyenda'],torso:0xf2c230,arms:0xf2c230,legs:0xd9a520,shoes:0xb98f00,hands:0xf2c230,fat:1.15,face:{img:'d',hair:'#15110f'},
+{id:'dorado',name:'Rey de los pedofilos',pass:20,sw:'#f2c230',nick:['Oro','Lingote','Leyenda'],torso:0xf2c230,arms:0xf2c230,legs:0xd9a520,shoes:0xb98f00,hands:0xf2c230,fat:1.15,face:{img:'d',hair:'#15110f'},
   extra(c,f){ const gold=phong(0xf2c230,{emissive:0x3a2a00,shininess:140,specular:0xffffff}); c.torso.material=gold; for(const A of[c.armL,c.armR,c.legL,c.legR]) A.children[0].material=gold;
     part(G.cyl,gold,.3,.12,.3,0,.42,0,c.head); for(let i=0;i<5;i++){ const a=i/5*TAU; part(G.cone,gold,.06,.14,.06,Math.cos(a)*.27,.55,Math.sin(a)*.27,c.head); }
     part(G.cyl,M(0xf6f2ea),.52*f,.06,.44*f,0,1.0,0,c.rig); part(G.box,M(0x1b1b1d),.18,.12,.03,0,1.0,.45*f,c.rig); }}
